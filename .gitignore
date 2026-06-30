@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Generált pontozási kimenetek
+scores*.txt
+test_*.txt
+
+# Generált riport
+ingatlan_rangsor.md
+
+# Cline / IDE
+.clinerules.md
+
+# Opcionális: MHTML letöltések mappája (ha van)
+ingatlan_com/

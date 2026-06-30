@@ -1,0 +1,69 @@
+{
+  "configs": [
+    {
+      "label": "default",
+      "description": "Alapértelmezett súlyozás az ingatlan rangsoroló prompt alapján",
+      "weights": {
+        "kor": 9,
+        "terulet": 8,
+        "allapot": 7,
+        "energetika": 5,
+        "udvar": 6,
+        "extra": 2,
+        "kulcsszo": 2
+      }
+    },
+    {
+      "label": "most_modern",
+      "description": "A legmodernebb győz.",
+      "weights": {
+        "kor": 10,
+        "terulet": 1,
+        "allapot": 1,
+        "energetika": 1,
+        "udvar": 1,
+        "extra": 1,
+        "kulcsszo": 1
+      }
+    },
+    {
+      "label": "nulla",
+      "description": "Semmi sem számít.",
+      "weights": {
+        "kor": 1,
+        "terulet": 1,
+        "allapot": 1,
+        "energetika": 1,
+        "udvar": 1,
+        "extra": 1,
+        "kulcsszo": 1
+      }
+    },
+    {
+      "label": "test_1",
+      "description": "test 1",
+      "weights": {
+        "kor": 1,
+        "terulet": 2,
+        "allapot": 3,
+        "energetika": 4,
+        "udvar": 5,
+        "extra": 6,
+        "kulcsszo": 7
+        }
+    },
+    {
+      "label": "test_2",
+      "description": "test 2",
+      "weights": {
+        "kor": 7,
+        "terulet": 6,
+        "allapot": 5,
+        "energetika": 4,
+        "udvar": 3,
+        "extra": 2,
+        "kulcsszo": 1
+        }
+    }
+  ]
+}
