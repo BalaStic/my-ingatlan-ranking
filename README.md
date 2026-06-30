@@ -79,7 +79,7 @@ A `scoring_config.json` több névvel ellátott (`label`) súlykonfigurációt t
 
 | Kulcs | Preferencia | Leírás |
 |---|---|---|
-| `kor` | Építés éve | 2010 után > 2001-2009 > 1991-2000 > 1990 előtt |
+| `kor` | Építés éve | Lineáris: 1950 → min. pont, 2025 → max. pont. Intervallumnál (pl. "1950–1980 között") a középpont (1965) az alap. |
 | `terulet` | Alapterület | Nagyobb > kisebb |
 | `allapot` | Ingatlan állapota | Újszerű > felújított > jó állapotú > felújítandó |
 | `energetika` | Energiahatékonyság | Hőszivattyú+napelem > modern gázkazán > konvektor |

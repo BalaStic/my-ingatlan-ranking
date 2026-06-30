@@ -24,8 +24,9 @@ Adat forrása: „Hasznos alapterület” vagy „Alapterület” mező.
 Ha nincs megadva, és a leírásból sem derül ki, az ingatlan megítélése bizonytalan, így hátrébb sorolandó.
 
 - Építés éve (súly: lásd <scoring_config.json>)
-Skála: 2010 utáni (Nagyon preferált) > 2001-2009 (Preferált) > 1991-2000 (Szóba jöhet) > 1990 vagy azelőtti (Kifejezetten hátrány, szigorúan pontlevonás jár érte!). 
-Szabály: Egy 1990 előtti ház sosem előzhet meg egy 2000 utáni házat az összesített rangsorban, még akkor sem, ha nagyobb vagy jobban felszerelt.
+Skála: Lineáris, 1950–2025 között folyamatosan emelkedő pontszám. 1950-ben épült ház kapja a legkevesebb pontot, 2025-ben épült a legmagasabbat. Nincs merev kategória: egy 1989-ben és egy 1991-ben épült ház közel azonos pontot kap, nem esnek külön kategóriába.
+Ha az építési év intervallumként van megadva (pl. "1950–1980 között"), a középpontot (1965) vedd alapul.
+Ha az építési év ismeretlen, a kód a leírás szövegéből konkrét évszámokat (pl. "1994") keres regex-szel, és azok átlagát veszi. Ha évszám nem szerepel, de a "múlt század első felében" fordulat igen, 1940-es becsléssel él. Ha semmi sem azonosítható, 1975-ös konzervatív becsléssel számol.
 
 Ingatlan állapota / Felújítás (súly: lásd <scoring_config.json>)
 Skála: Újszerű > Felújított > Jó állapotú > Felújítandó.
@@ -47,17 +48,21 @@ Irreleváns elemek: pince.
 Szerepe: Csak azonos szintű ingatlanok között dönthet, holtverseny esetén.
 
 3. Kuclcszavak (súly: lásd <scoring_config.json>)
-A következő kulcsszavak erősen befolyásolják a rangsorolást:
+A következő kulcsszavak befolyásolják a rangsorolást:
 "modern", "igényes", "szép": erős jelzők, az ingtalan plusz pontot érdemel.
 "antik", "cserépkályha", "kemence": nem kell, pontlevonás.
 
 4. Hiányzó adatok kezelése
 Ha egy ingatlannál alapvető adatok hiányoznak (különösen a magas súlyú preferenciáknál), az hátrányt jelent, mert az ingatlan kevésbé megítélhető.
-A peremfeltételeknél a hiányzó adat azt jelenti, hogy a feltétel nem ellenőrizhető, tehát nem teljesül (pl. ha nincs megadva a szobák száma, akkor a „min. 4 szoba” feltétel nem teljesül).
+A peremfeltételeknél a hiányzó adat azt jelenti, hogy a feltétel nem ellenőrizhető, tehát nem teljesül (pl. ha nincs megadva a szobák száma, akkor a „min. 4 szoba" feltétel nem teljesül).
 A preferenciáknál a hiányzó adat esetén a skála közepes vagy alsó szintjét kell feltételezni (pl. ismeretlen energetika → legfeljebb közepes, kivéve ha a fűtési mód egyértelműen gyenge).
 
 
-5. A válasz formátuma
+5. A végső sorrendet befolyásoló szabályok
+Egy 1990 előtt épült ingatlan NEM előzhet meg egy 2000 után épültet az összesített rangsorban, akkor sem, ha egyébként az ingatlan állapota, mérete vagy felszereltsége ezt indokolná.
+
+
+6. A válasz formátuma
 Rövid bevezető: Milyen fő szempontok alakították a rangsort (hivatkozással a peremfeltételekre és a preferenciasúlyokra).
 Sorszámozott lista, zárójelben egy általad számított pontszámmal (ez csak nekem fontos, hogy lássam, hogyan szórnak egymáshoz képest, egyéb magyarázat nem szükséges).
 Csak az első 10-et listázd.
@@ -69,4 +74,4 @@ Minden helyezésnél szerepeljen:
 Külön szekció a lista végén: Azok az ingatlanok, amelyek a peremfeltételeknek nem feleltek meg, vagy adathiány miatt súlyosan hátrányba kerültek. Itt is indokold meg, melyik feltétel nem teljesült.
 - egyedi jellemző: nem szokványos attribútum, amivel rendelkezik az ingatlan és bizonyos esetekben hasznos: pl. pince, egyedi gépészeti vagy építészeti megoldás
 
-6. A JSON lista
+7. A JSON lista

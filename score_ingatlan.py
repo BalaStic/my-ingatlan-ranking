@@ -8,6 +8,7 @@ import argparse
 import json
 import io
 import os
+import re
 import sys
 
 # ---------------------------------------------------------------------------
@@ -37,24 +38,50 @@ def parse_szobak(szobak_str, leiras=''):
             count += 1
     return count
 
+def _ev_to_pont(ev: int) -> float:
+    """Lineáris pontozás: 1950 → 1.0, 2025 → 5.0"""
+    ev_clamped = max(1950, min(2025, ev))
+    return 1.0 + (ev_clamped - 1950) / (2025 - 1950) * 4.0
+
+def _kor_kategoria_str(ev: int) -> str:
+    """Kategória-szöveg a pre/post flag-ekhez"""
+    if ev < 1990:
+        return '1990 előtt'
+    if ev <= 2000:
+        return '1991-2000'
+    if ev <= 2009:
+        return '2001-2009'
+    return '2010 után'
+
 def get_kor_kategoria(kor_str, leiras=''):
-    """Visszaadja a kor kategóriát és pontszámot"""
-    if 'nincs megadva' in kor_str.lower():
+    """Visszaadja a kor kategóriát és lineáris pontszámot (1.0–5.0).
+    Intervallumnál (pl. '1950 és 1980 között') a középpontot veszi.
+    Ismeretlen esetén konzervatív becsléssel él.
+    """
+    if not kor_str or 'nincs megadva' in kor_str.lower():
+        # Szövegből próbálunk évet kinyerni
+        evek = [int(m) for m in re.findall(r'\b(19[5-9]\d|20[0-2]\d)\b', leiras)]
+        if evek:
+            ev = int(round(sum(evek) / len(evek)))
+            return _kor_kategoria_str(ev), _ev_to_pont(ev)
         if 'múlt század első felében' in leiras.lower():
-            return '1990 előtt', 1
-        if '1994' in leiras or '1992' in leiras:
-            return '1991-2000', 3
-        return 'Ismeretlen', 2  # közepes
-    if '1950 és 1980' in kor_str:
-        return '1990 előtt', 1
-    if '1981 és 2000' in kor_str:
-        return '1991-2000', 3
-    if '2001 és 2010' in kor_str:
-        return '2001-2009', 4
-    for year in range(2010, 2030):
-        if str(year) in kor_str:
-            return '2010 után', 5
-    return 'Ismeretlen', 2
+            return '1990 előtt', _ev_to_pont(1940)
+        return 'Ismeretlen', _ev_to_pont(1975)  # konzervatív becslés
+
+    # Intervallum: "1950 és 1980 között" → középpont
+    match = re.search(r'(\d{4})\s+és\s+(\d{4})', kor_str)
+    if match:
+        ev1, ev2 = int(match.group(1)), int(match.group(2))
+        ev = (ev1 + ev2) // 2
+        return _kor_kategoria_str(ev), _ev_to_pont(ev)
+
+    # Konkrét év: "2021", "Épült: 2006" stb.
+    years = [int(m) for m in re.findall(r'\b(19[5-9]\d|20[0-2]\d)\b', kor_str)]
+    if years:
+        ev = max(years)  # ha több év van (pl. bővítés), a legújabbat vesszük
+        return _kor_kategoria_str(ev), _ev_to_pont(ev)
+
+    return 'Ismeretlen', _ev_to_pont(1975)
 
 def get_allapot_pont(allapot):
     a = allapot.lower()
