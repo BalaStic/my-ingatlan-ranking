@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Ingatlan Scorer",
+  "version": "1.0",
+  "description": "Pontozza az ingatlan.com hirdetéseket a scoring_config.json alapján",
+  "permissions": ["activeTab", "scripting", "tabs", "pageCapture", "downloads", "debugger"],
+  "host_permissions": ["https://ingatlan.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://ingatlan.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["scoring_config.json"],
+      "matches": ["https://ingatlan.com/*"]
+    }
+  ]
+}

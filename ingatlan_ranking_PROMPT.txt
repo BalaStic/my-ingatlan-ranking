@@ -23,6 +23,10 @@ Skála: Nagyobb alapterület > Kisebb alapterület
 Adat forrása: „Hasznos alapterület” vagy „Alapterület” mező. 
 Ha nincs megadva, és a leírásból sem derül ki, az ingatlan megítélése bizonytalan, így hátrébb sorolandó.
 
+- Telekterület
+Emlékeztető a felhasználónak: ezt nem súlyozzuk, mert az alapterület és az udvar összege kiadja ezt az információt,
+és mindkettő súlyozva van már.
+
 - Építés éve (súly: lásd <scoring_config.json>)
 Skála: Lineáris, 1950–2025 között folyamatosan emelkedő pontszám. 1950-ben épült ház kapja a legkevesebb pontot, 2025-ben épült a legmagasabbat. Nincs merev kategória: egy 1989-ben és egy 1991-ben épült ház közel azonos pontot kap, nem esnek külön kategóriába.
 Ha az építési év intervallumként van megadva (pl. "1950–1980 között"), a középpontot (1965) vedd alapul.

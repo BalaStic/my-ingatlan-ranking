@@ -15,6 +15,7 @@ Ingatlan hirdetések pontozása és rangsorolása konfigurálható súlyokkal, a
 | `ranking_report_PROMPT.md` | Prompt az AI chatbot számára a végső riport (`ingatlan_rangsor.md`) generálásához |
 | `debug_html.py` | HTML debug segédeszköz (MHTML elemzéshez) |
 | `test_single.py` | Egyetlen MHTML fájl tesztelése |
+| `chrome_extension/` | Chrome bővítmény: egy kattintással pontozza az ingatlan.com hirdetéseket — lásd [`chrome_extension/README.md`](chrome_extension/README.md) |
 
 ## Használat
 

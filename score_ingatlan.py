@@ -124,7 +124,7 @@ def get_energetika_pont(ing):
         pont -= 1
     if 'van' in klima:
         pont += 1
-    if 'c' in energetika or 'b' in energetika:
+    if ('c' in energetika or 'b' in energetika) and 'nincs' not in energetika:
         pont += 1
     if 'a' in energetika and 'nincs' not in energetika:
         pont += 2
@@ -325,6 +325,8 @@ def main() -> str:
             extra_pont * weights['extra'] +
             kulcsszo_pont * weights['kulcsszo']
         )
+        max_pont = 5 * sum(weights.values())
+        pct = total / max_pont * 100 if max_pont > 0 else 0
         
         nm_ar = ar / terulet * 1000000 if terulet > 0 else 0
         
@@ -349,6 +351,7 @@ def main() -> str:
             'extra_pont': extra_pont,
             'kulcsszo_pont': kulcsszo_pont,
             'total': total,
+            'pct': pct,
             'pre1990': pre1990,
             'post2000': post2000,
             'egyedi': egyedi,
@@ -375,12 +378,12 @@ def main() -> str:
         p(f'   Terület pont: {r["terulet"]/50:.1f}*{weights["terulet"]} | Energetika: [{r["energetika_pont"]}*{weights["energetika"]}] | Udvar: [{r["udvar_pont"]}*{weights["udvar"]}]')
         p(f'   Extra: [{r["extra_pont"]}*{weights["extra"]}] | Kulcsszó: [{r["kulcsszo_pont"]}*{weights["kulcsszo"]}]')
         p(f'   Egyedi: {r["egyedi"]}')
-        p(f'   >>> ÖSSZPONT: {r["total"]:.1f}')
+        p(f'   >>> ÖSSZPONT: {r["total"]:.1f} ({r["pct"]:.1f}%)')
         p()
     
     p("=== RANGSOR PONTSZÁM SZERINT ===\n")
     for rank, r in enumerate(results, 1):
-        p(f'{rank}. [{r["total"]:.1f}] {r["cim"]} (Kor: {r["kor_kat"]})')
+        p(f'{rank}. [{r["total"]:.1f} / {r["pct"]:.1f}%] {r["cim"]} (Kor: {r["kor_kat"]})')
     
     p("\n=== PRE-1990 vs POST-2000 SZABÁLY ELLENŐRZÉS ===\n")
     p("  PRE-1990:")
