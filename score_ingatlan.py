@@ -103,7 +103,7 @@ def get_energetika_pont(ing):
     energetika = ing.get('Energetikai tanúsítvány', '').lower()
     klima = ing.get('Légkondicionáló', '').lower()
     
-    pont = 2  # alapértelmezett közepes
+    pont = 1  # alapértelmezett: alacsony (gázkazán nélkül is legalább 1)
     
     if 'van' in napelem:
         pont += 2
@@ -129,7 +129,9 @@ def get_energetika_pont(ing):
     if 'a' in energetika and 'nincs' not in energetika:
         pont += 2
     
-    return max(1, min(8, pont))
+    # Only hőszivattyú can reach 5; gázkazán/other heating capped at 4
+    cap = 5 if 'hőszivattyú' in futes else 4
+    return max(1, min(cap, pont))
 
 def get_udvar_pont(telek, terulet):
     kert = telek - terulet
@@ -160,7 +162,7 @@ def get_extra_pont(ing):
         pont += 1
     if 'öntöző' in leiras:
         pont += 1
-    return pont
+    return min(5, pont)
 
 def get_kulcsszo_pont(leiras):
     """Kulcsszavak a leírásban"""

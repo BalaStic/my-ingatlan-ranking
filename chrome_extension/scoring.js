@@ -112,7 +112,7 @@ function getEnergetikaPont(ing) {
   const energetika = (ing['Energetikai tanúsítvány'] || '').toLowerCase();
   const klima = (ing['Légkondicionáló'] || '').toLowerCase();
 
-  let pont = 2;
+  let pont = 1; // base: low (even without gas boiler, minimum 1 after clamp)
 
   if (napelem.includes('van')) pont += 2;
   if (szigeteles.includes('van')) {
@@ -129,7 +129,9 @@ function getEnergetikaPont(ing) {
   if ((energetika.includes('c') || energetika.includes('b')) && !energetika.includes('nincs')) pont += 1;
   if (energetika.includes('a') && !energetika.includes('nincs')) pont += 2;
 
-  return Math.max(1, Math.min(8, pont));
+  // Only hőszivattyú can reach 5; gázkazán/other heating capped at 4
+  const cap = futes.includes('hőszivattyú') ? 5 : 4;
+  return Math.max(1, Math.min(cap, pont));
 }
 
 // ---------------------------------------------------------------------------
@@ -159,7 +161,7 @@ function getExtraPont(ing) {
   const leiras = (ing['leírás'] || '').toLowerCase();
   if (leiras.includes('riasztó')) pont += 1;
   if (leiras.includes('öntöző')) pont += 1;
-  return pont;
+  return Math.min(5, pont);
 }
 
 // ---------------------------------------------------------------------------
