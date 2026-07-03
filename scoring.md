@@ -28,13 +28,13 @@ KOR PONT = 1.0 + (év - 1950) / (2025 - 1950) × 4.0
 
 ### 2. TERÜLET — Alapterület
 ```
-TERÜLET PONT = min(5 ; alapterület / 50)
+TERÜLET PONT = min(5 ; alapterület / 45)
 
 példák:
-    150 m² → 3.0 pt
-    200 m² → 4.0 pt
-    250 m² → 5.0 pt (maximum)
-    300 m² → 5.0 pt (capped)
+    135 m² → 3.0 pt
+    180 m² → 4.0 pt
+    225 m² → 5.0 pt (maximum)
+    250 m² → 5.0 pt (capped)
 ```
 
 ---

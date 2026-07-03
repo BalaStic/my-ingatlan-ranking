@@ -4,11 +4,11 @@
   },
   "configs": [
     {
-      "label": "Balázs default",
-      "description": "Balázs preferenciái alapján",
+      "label": "Balázs ház",
+      "description": "Balázs házra vonatkozó preferenciái alapján",
       "weights": {
         "kor": 10,
-        "terulet": 5,
+        "terulet": 3,
         "allapot": 9,
         "energetika": 8,
         "udvar": 3,
@@ -17,8 +17,21 @@
       }
     },
     {
-      "label": "Encike default",
-      "description": "Encike preferenciái alapján",
+      "label": "Balázs lakás",
+      "description": "Balázs lakásra vonatkozó preferenciái alapján",
+      "weights": {
+        "kor": 10,
+        "terulet": 3,
+        "allapot": 9,
+        "energetika": 8,
+        "udvar": 0,
+        "extra": 0,
+        "kulcsszo": 2
+      }
+    },
+    {
+      "label": "Encike ház",
+      "description": "Encike házra vonatkozó preferenciái alapján",
       "weights": {
         "kor": 6,
         "terulet": 10,
@@ -59,13 +72,13 @@
       "label": "test_1",
       "description": "test 1",
       "weights": {
-        "kor": 1,
-        "terulet": 2,
-        "allapot": 3,
-        "energetika": 4,
-        "udvar": 5,
-        "extra": 6,
-        "kulcsszo": 7
+        "kor": 10,
+        "terulet": 0,
+        "allapot": 10,
+        "energetika": 10,
+        "udvar": 0,
+        "extra": 0,
+        "kulcsszo": 0
         }
     },
     {

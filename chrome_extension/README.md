@@ -4,7 +4,7 @@ Google Chrome bővítmény, amely ingatlan.com hirdetésoldalon egyetlen kattint
 
 ## Cél
 
-Automatizálja a `score_ingatlan.py` logikáját böngészőben: nem kell MHTML-t letölteni, JSON-t konvertálni és Python-t futtatni — elég megnyitni a hirdetést, és kattintani a bővítmény gombjára.
+Automatizálja a `scoring.py` logikáját böngészőben: nem kell MHTML-t letölteni, JSON-t konvertálni és Python-t futtatni — elég megnyitni a hirdetést, és kattintani a bővítmény gombjára.
 
 ## Funkciók
 
@@ -46,6 +46,6 @@ Majd töltsd újra a bővítményt: `chrome://extensions/` → 🔄 **Reload**
 | `manifest.json` | Extension konfiguráció (MV3) |
 | `popup.html` / `popup.js` | Felhasználói felület |
 | `content.js` | Oldal scraping + scorecard injektálás |
-| `scoring.js` | Pontozási logika (portolva `score_ingatlan.py`-ból) |
+| `scoring.js` | Pontozási logika (portolva `scoring.py`-ból) |
 | `background.js` | MHTML mentés service worker (chrome.debugger API) |
 | `scoring_config.json` | Súlykonfigurációk másolata |

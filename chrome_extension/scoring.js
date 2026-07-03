@@ -1,5 +1,5 @@
 /**
- * scoring.js — Ingatlan scoring logic ported from score_ingatlan.py
+ * scoring.js — Ingatlan scoring logic ported from scoring.py
  */
 
 // ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ function evToPont(ev) {
 }
 
 function korKategoriaStr(ev) {
-  if (ev < 1990) return '1990 előtt';
+  if (ev < 1991) return '1990 előtt';
   if (ev <= 2000) return '1991-2000';
   if (ev <= 2009) return '2001-2009';
   return '2010 után';
@@ -73,7 +73,7 @@ function getKorKategoria(korStr, leiras = '') {
   if (intervalMatch) {
     const ev1 = parseInt(intervalMatch[1]);
     const ev2 = parseInt(intervalMatch[2]);
-    const ev = Math.floor((ev1 + ev2) / 2);
+    const ev = Math.round((ev1 + ev2) / 2);
     return { kat: korKategoriaStr(ev), pont: evToPont(ev) };
   }
 
@@ -197,10 +197,16 @@ function scoreIngatlan(ing, weights) {
   const udvarPont = getUdvarPont(telek, terulet);
   const extraPont = getExtraPont(ing);
   const kulcsszoPoint = getKulcsszoPoint(leiras);
-  const teruletPont = Math.min(5, terulet / 50);
+  const teruletPont = Math.min(5, terulet / 45);
+
+  const rawKor = ing['Építés éve'] || '';
+  const intervalMatch = rawKor.match(/(\d{4})\s+és\s+(\d{4})/);
+  const korLabel = intervalMatch
+    ? intervalMatch[1] + '-' + intervalMatch[2] + ' között'
+    : (rawKor || '?');
 
   const breakdown = {
-    kor:        { pont: korPont,       weight: weights.kor,        subtotal: korPont * weights.kor,        label: korKat + ' (' + (ing['Építés éve'] || '?') + ')' },
+    kor:        { pont: korPont,       weight: weights.kor,        subtotal: korPont * weights.kor,        label: korLabel },
     terulet:    { pont: teruletPont,   weight: weights.terulet,    subtotal: teruletPont * weights.terulet, label: terulet + ' m²' },
     allapot:    { pont: allapotPont,   weight: weights.allapot,    subtotal: allapotPont * weights.allapot, label: ing['Ingatlan állapota'] || 'ismeretlen' },
     energetika: { pont: energetikaPont,weight: weights.energetika, subtotal: energetikaPont * weights.energetika, label: (ing['Fűtés'] || 'ismeretlen') },

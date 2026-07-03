@@ -1,0 +1,103 @@
+{
+  "configs": [
+    {
+      "label": "Encike ház 1",
+      "conditions": {
+        "ingatlan_típusa": "eladó",
+        "kategória": "ház",
+        "alapterület": {
+          "min": 120,
+          "egység": "m²"
+        },
+        "állapot": [
+          "újszerű",
+          "felújított",
+          "jó állapotú"
+        ],
+        "telek_méret": {
+          "min": 200,
+          "max": 1000,
+          "egység": "m²"
+        },
+        "garázs": "önálló garázs",
+        "ingatlan_jellege": [
+          "családi ház",
+          "ikerház",
+          "sorház"
+        ],
+        "szobák_száma": {
+          "min": 5,
+          "viszony": "felett"
+        },
+        "ár": {
+          "min": 120,
+          "max": 150,
+          "deviza": "millió Ft"
+        },
+        "kerületek": [
+          "I. kerület",
+          "II. kerület",
+          "III. kerület",
+          "IV. kerület",
+          "X. kerület",
+          "XI. kerület",
+          "XII. kerület",
+          "XIV. kerület",
+          "XVI. kerület",
+          "XVII. kerület",
+          "XVIII. kerület",
+          "XXI. kerület",
+          "XXII. kerület"
+        ]
+      }
+    },
+    {
+      "label": "Balázs lakás 1",
+      "conditions": {
+        "ingatlan_típusa": "eladó",
+        "kategória": "lakás",
+        "alapterület": {
+          "min": 100,
+          "egység": "m²"
+        },
+        "állapot": [
+          "újszerű",
+          "felújított",
+          "jó állapotú"
+        ],
+        "parkolás": [
+          "önálló garázs",
+          "teremgarázs hely",
+          "udvari beálló"
+        ],
+        "ingatlan_jellege": [
+          "tégla építésű lakás"
+        ],
+        "szobák_száma": {
+          "min": 5,
+          "viszony": "felett"
+        },
+        "ár": {
+          "min": 120,
+          "max": 150,
+          "deviza": "millió Ft"
+        },
+        "kerületek": [
+          "I. kerület",
+          "II. kerület",
+          "III. kerület",
+          "IV. kerület",
+          "X. kerület",
+          "XI. kerület",
+          "XII. kerület",
+          "XIV. kerület",
+          "XVI. kerület",
+          "XVII. kerület",
+          "XVIII. kerület",
+          "XXI. kerület",
+          "XXII. kerület"
+        ]
+      }
+    }
+  ]
+}
