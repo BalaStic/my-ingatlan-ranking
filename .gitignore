@@ -20,3 +20,9 @@ ingatlan_com/
 commit_msg.txt
 
 ranked_*/
+JSON/ingatlanok.json
+JSON/ingatlan_com.json
+
+.clineignore
+.clinerules
+TODO.txt

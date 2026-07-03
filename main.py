@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 main.py — CLI belépési pont az ingatlan pontozáshoz és rangsoroláshoz.
-Bemenet: ingatlanok.json, kimenet: ranked_{LABEL}.txt
+Bemenet: JSON/ingatlanok.json, kimenet: ranked_{LABEL}.txt
 
 Használat:
   python main.py
@@ -30,7 +30,7 @@ from rankrules import apply_ranking_rules
 
 def main() -> str:
     parser = argparse.ArgumentParser(
-        description="Score and rank properties from ingatlanok.json using the ingatlan ranking prompt.",
+        description="Score and rank properties from JSON/ingatlanok.json using the ingatlan ranking prompt.",
     )
     parser.add_argument(
         "--output", "-o",
@@ -41,7 +41,7 @@ def main() -> str:
     parser.add_argument(
         "--input", "-i",
         metavar="FILE",
-        default="ingatlanok.json",
+        default="JSON/ingatlanok.json",
         help="Input JSON file (default: ingatlanok.json)",
     )
     parser.add_argument(
@@ -53,8 +53,8 @@ def main() -> str:
     parser.add_argument(
         "--config-file",
         metavar="FILE",
-        default="scoring_config.json",
-        help="JSON file with scoring weight configs (default: scoring_config.json)",
+        default="JSON/scoring_config.json",
+        help="JSON file with scoring weight configs (default: JSON/scoring_config.json)",
     )
     parser.add_argument(
         "--prefilter", "-p",
@@ -199,10 +199,10 @@ def main() -> str:
     print(f"Pontszámok elmentve: {out_path}", file=sys.stderr)
 
     files_to_copy = [
-        "scoring_config.json",
+        "JSON/scoring_config.json",
         args.input,
-        "ranking_report_PROMPT.md",
-        "scoring.md",
+        "PROMPTS/ranking_report_PROMPT.md",
+        "PROMPTS/scoring.md",
         "scoring.py"
     ]
     if args.prefilter:
