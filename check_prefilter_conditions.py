@@ -42,8 +42,8 @@ for i, ing in enumerate(data, 1):
     kor_raw  = ing.get('Építés éve', '')
     leiras   = ing.get('leírás', '')
 
-    kor_kat, _ = get_kor_kategoria(kor_raw, leiras)
-    pre1990    = '1990 előtt' in kor_kat
+    kor_kat, _, kor_ev = get_kor_kategoria(kor_raw, leiras)
+    pre1990    = kor_ev < 1991
 
     issues = get_prefilter_issues(ing, conditions)
 

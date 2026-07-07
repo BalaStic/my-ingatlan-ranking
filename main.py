@@ -97,7 +97,7 @@ def main() -> str:
         terulet      = parse_terulet(ing['Alapterület'])
         telek        = parse_telek(ing['Telekterület'])
         szobak       = parse_szobak(ing['Szobák'])
-        kor_kat, kor_pont = get_kor_kategoria(ing['Építés éve'], ing.get('leírás', ''))
+        kor_kat, kor_pont, kor_ev = get_kor_kategoria(ing['Építés éve'], ing.get('leírás', ''))
         allapot_pont = get_allapot_pont(ing.get('Ingatlan állapota', ''))
         energetika_pont = get_energetika_pont(ing)
         udvar_pont   = get_udvar_pont(telek, terulet)
@@ -120,8 +120,8 @@ def main() -> str:
         pct  = total / max_pont * 100 if max_pont > 0 else 0
         nm_ar = ar / terulet * 1_000_000 if terulet > 0 else 0
 
-        pre1990  = '1990 előtt' in kor_kat
-        post2000 = '2001-2009' in kor_kat or '2010 után' in kor_kat
+        pre1990  = kor_ev < 1991
+        post2000 = kor_ev > 2000
 
         results.append({
             'index': i + 1,
@@ -160,8 +160,10 @@ def main() -> str:
     if args.enable_reranking:
         results = apply_ranking_rules(results)
 
-    # Részletes elemzés rendezett sorrendben
+    # Részletes elemzés rendezett sorrendben (első 10 részletesen)
     for rank, r in enumerate(results, 1):
+        if rank > 10:
+            break
         p(f'#{rank} {r["cim"]}')
         p(f'   Ár: {r["ar"]}M | Terület: {r["terulet"]}m² | Nm-ár: {r["nm_ar"]:,.0f} Ft/m²')
         p(f'   Kor: {r["kor_kat"]} ({r["epites_eve_raw"]}) [{r["kor_pont"]}*{weights["kor"]}]')
@@ -202,8 +204,7 @@ def main() -> str:
     files_to_copy = [
         "JSON/scoring_config.json",
         "PROMPTS/ranking_report_PROMPT.md",
-        "PROMPTS/scoring.md",
-        "scoring.py"
+        "PROMPTS/scoring.md"
     ]
     if args.prefilter:
         files_to_copy.append("prefilters.json")
@@ -216,8 +217,9 @@ def main() -> str:
         else:
             print(f"Figyelmeztetés: {file} nem található, így nem lett átmásolva.", file=sys.stderr)
 
-    # Filtered input JSON — only ranked (non-excluded) items
-    filtered = [ing for i, ing in enumerate(data) if i not in kizart]
+    # Filtered input JSON — top 10 ranked items
+    top10_indices = [r['index'] - 1 for r in results[:10]]
+    filtered = [data[i] for i in top10_indices]
     filtered_json_path = os.path.join(folder_name, "ranked_ingatlanok.json")
     with open(filtered_json_path, 'w', encoding='utf-8') as f:
         json.dump(filtered, f, ensure_ascii=False, indent=2)

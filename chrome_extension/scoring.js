@@ -60,12 +60,12 @@ function getKorKategoria(korStr, leiras = '') {
     if (matches.length > 0) {
       const evek = matches.map(m => parseInt(m[1]));
       const ev = Math.round(evek.reduce((a, b) => a + b, 0) / evek.length);
-      return { kat: korKategoriaStr(ev), pont: evToPont(ev) };
+      return { kat: korKategoriaStr(ev), pont: evToPont(ev), ev };
     }
     if (leiras.toLowerCase().includes('múlt század első felében')) {
-      return { kat: '1990 előtt', pont: evToPont(1940) };
+      return { kat: '1990 előtt', pont: evToPont(1940), ev: 1940 };
     }
-    return { kat: 'Ismeretlen', pont: evToPont(1975) };
+    return { kat: 'Ismeretlen', pont: evToPont(1975), ev: 1975 };
   }
 
   // Interval: "1950 és 1980 között"
@@ -73,18 +73,21 @@ function getKorKategoria(korStr, leiras = '') {
   if (intervalMatch) {
     const ev1 = parseInt(intervalMatch[1]);
     const ev2 = parseInt(intervalMatch[2]);
-    const ev = Math.round((ev1 + ev2) / 2);
-    return { kat: korKategoriaStr(ev), pont: evToPont(ev) };
+    const midpoint = (ev1 + ev2) / 2;
+    const ev = Math.floor(midpoint);  // floor: conservatively use the lower bound for scoring
+    const displayEv = Math.ceil(midpoint);  // ceil: display the approximate higher year
+    const kat = '~' + displayEv;
+    return { kat, pont: evToPont(ev), ev };
   }
 
   // Specific year(s)
   const years = [...korStr.matchAll(/\b(19[5-9]\d|20[0-2]\d)\b/g)].map(m => parseInt(m[1]));
   if (years.length > 0) {
     const ev = Math.max(...years);
-    return { kat: korKategoriaStr(ev), pont: evToPont(ev) };
+    return { kat: korKategoriaStr(ev), pont: evToPont(ev), ev };
   }
 
-  return { kat: 'Ismeretlen', pont: evToPont(1975) };
+  return { kat: 'Ismeretlen', pont: evToPont(1975), ev: 1975 };
 }
 
 // ---------------------------------------------------------------------------

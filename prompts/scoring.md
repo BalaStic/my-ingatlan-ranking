@@ -14,7 +14,12 @@ ha az "Építés éve" nincs megadva:
     egyébként → 1975-öt becsül (konzervatív)
 
 ha intervallum (pl. "1950 és 1980 között"):
-    → középpont = (1950+1980) / 2 = 1965
+    → középpont = (év1 + év2) / 2
+    → pontozás: floor(középpont) — konzervatív, az alsó évszámot használja
+    → megjelenítés: "~ceil(középpont)" — a közelítő felső évszám
+    példák:
+        "1950 és 1980 között" → pontozás: 1965, megjelenítés: ~1965
+        "1981 és 2000 között" → pontozás: 1990, megjelenítés: ~1991
 
 egyébként:
     → a legújabb évszámot veszi
@@ -22,6 +27,15 @@ egyébként:
 KOR PONT = 1.0 + (év - 1950) / (2025 - 1950) × 4.0
     → lineáris skála: 1950 → 1.0 pt, 2025 → 5.0 pt
     → közbenső példák: 1975 → 2.3, 2000 → 3.7, 2015 → 4.5
+
+KOR KATEGÓRIA (a pontozott év alapján):
+    év < 1991  → "1990 előtt"  (pre1990 flag)
+    1991-2000  → "1991-2000"   (middle csoport)
+    2001-2009  → "2001-2009"   (post2000 flag)
+    2010 után  → "2010 után"   (post2000 flag)
+
+    Intervallum esetén a kategória helyett a ~évszám jelenik meg,
+    de a pre1990/post2000 flag a pontozáshoz használt év alapján dől el.
 ```
 
 ---

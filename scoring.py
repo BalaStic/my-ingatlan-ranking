@@ -6,6 +6,7 @@ A CLI belépési pont: main.py
 """
 
 import json
+import math
 import os
 import re
 import sys
@@ -57,31 +58,35 @@ def _kor_kategoria_str(ev: int) -> str:
     return '2010 után'
 
 def get_kor_kategoria(kor_str, leiras=''):
-    """Visszaadja a kor kategóriát és lineáris pontszámot (1.0–5.0).
+    """Visszaadja a kor kategóriát, lineáris pontszámot és a becsült évszámot (1.0–5.0).
     Intervallumnál (pl. '1950 és 1980 között') a középpontot veszi.
     Ismeretlen esetén konzervatív becsléssel él.
+    Visszatérés: (kat_str, pont, ev) — ahol ev a pontozáshoz használt év.
     """
     if not kor_str or 'nincs megadva' in kor_str.lower():
         evek = [int(m) for m in re.findall(r'\b(19[5-9]\d|20[0-2]\d)\b', leiras)]
         if evek:
             ev = int(round(sum(evek) / len(evek)))
-            return _kor_kategoria_str(ev), _ev_to_pont(ev)
+            return _kor_kategoria_str(ev), _ev_to_pont(ev), ev
         if 'múlt század első felében' in leiras.lower():
-            return '1990 előtt', _ev_to_pont(1940)
-        return 'Ismeretlen', _ev_to_pont(1975)
+            return '1990 előtt', _ev_to_pont(1940), 1940
+        return 'Ismeretlen', _ev_to_pont(1975), 1975
 
     match = re.search(r'(\d{4})\s+és\s+(\d{4})', kor_str)
     if match:
         ev1, ev2 = int(match.group(1)), int(match.group(2))
-        ev = int(round((ev1 + ev2) / 2))
-        return _kor_kategoria_str(ev), _ev_to_pont(ev)
+        midpoint = (ev1 + ev2) / 2
+        ev = int(midpoint)  # floor: conservatively use the lower bound for scoring
+        display_ev = int(math.ceil(midpoint))  # ceil: display the approximate higher year
+        kat = f'~{display_ev}'
+        return kat, _ev_to_pont(ev), ev
 
     years = [int(m) for m in re.findall(r'\b(19[5-9]\d|20[0-2]\d)\b', kor_str)]
     if years:
         ev = max(years)
-        return _kor_kategoria_str(ev), _ev_to_pont(ev)
+        return _kor_kategoria_str(ev), _ev_to_pont(ev), ev
 
-    return 'Ismeretlen', _ev_to_pont(1975)
+    return 'Ismeretlen', _ev_to_pont(1975), 1975
 
 def get_allapot_pont(allapot):
     a = allapot.lower()
