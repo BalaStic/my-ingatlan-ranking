@@ -79,7 +79,7 @@ function doAttachAndCapture(target, filename, attempt, sendResponse) {
           const dataUrl = 'data:application/octet-stream;base64,' + base64;
 
           chrome.downloads.download(
-            { url: dataUrl, filename, saveAs: true },
+            { url: dataUrl, filename, saveAs: false },
             () => {
               if (chrome.runtime.lastError) {
                 sendResponse({ success: false, error: 'Letöltés hiba: ' + chrome.runtime.lastError.message });

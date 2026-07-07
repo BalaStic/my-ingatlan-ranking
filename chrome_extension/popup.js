@@ -47,12 +47,15 @@ function loadConfigs() {
 }
 
 // ---------------------------------------------------------------------------
-// MHTML save — fire-and-forget to background SW (which handles the full download)
+// MHTML save — background SW handles the full download
 // ---------------------------------------------------------------------------
 
 function saveMhtml(tabId, tabUrl, cim) {
-  // Fire-and-forget: background.js handles capture AND download dialog
-  chrome.runtime.sendMessage({ action: 'saveMhtml', tabId, tabUrl, cim });
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ action: 'saveMhtml', tabId, tabUrl, cim }, (response) => {
+      resolve(response);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -141,6 +144,58 @@ function renderResult(scoreResult, ing, configLabel) {
 function init() {
   const select = document.getElementById('configSelect');
   const btn = document.getElementById('scoreBtn');
+  const saveAllBtn = document.getElementById('saveAllBtn');
+
+  if (saveAllBtn) {
+    saveAllBtn.addEventListener('click', async () => {
+      saveAllBtn.disabled = true;
+      setStatus('Nyitott ingatlanok keresése...');
+      
+      try {
+        const tabs = await chrome.tabs.query({});
+        let ingatlanTabs = tabs.filter(tab => tab.url && tab.url.match(/^https?:\/\/(?:www\.)?ingatlan\.com\/\d{8}(?:\/|\?|#|$)/));
+        
+        // Sort to ensure the active tab is processed last, so the popup stays open until the end
+        const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        const activeTabId = activeTabs.length > 0 ? activeTabs[0].id : null;
+        
+        ingatlanTabs.sort((a, b) => {
+          if (a.id === activeTabId) return 1;
+          if (b.id === activeTabId) return -1;
+          return 0;
+        });
+        
+        if (ingatlanTabs.length === 0) {
+          setStatus('Nincs megnyitott ingatlan (8 számjegyű URL).');
+          setTimeout(() => { setStatus('Nyomj a Pontozás gombra!'); saveAllBtn.disabled = false; }, 2500);
+          return;
+        }
+
+        setStatus(`${ingatlanTabs.length} ingatlan mentése folyamatban...`);
+        let savedCount = 0;
+        let previousTabId = null;
+        
+        for (const tab of ingatlanTabs) {
+          if (previousTabId !== null) {
+            chrome.tabs.remove(previousTabId).catch(e => console.error('Hiba a tab bezárásakor:', e));
+          }
+          await saveMhtml(tab.id, tab.url, tab.title);
+          previousTabId = tab.id;
+          savedCount++;
+          await new Promise(r => setTimeout(r, 600));
+        }
+        
+        if (previousTabId !== null) {
+          chrome.tabs.remove(previousTabId).catch(e => console.error('Hiba a tab bezárásakor:', e));
+        }
+        
+        setStatus(`Kész! ${savedCount} ingatlan mentve.`);
+      } catch (e) {
+        showError('Hiba mentés közben: ' + e.message);
+        saveAllBtn.disabled = false;
+      }
+    });
+  }
 
   // Attach click handler immediately — unconditionally, regardless of config load status
   btn.addEventListener('click', async () => {

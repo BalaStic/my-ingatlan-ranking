@@ -120,6 +120,45 @@ def get_prefilter_issues(ing, conditions):
             if garazs_conds.lower() not in parkolas:
                 issues.append(f"Garázs nem megfelelő: {parkolas}")
 
+    # 8. Ingatlan típusa (eladó / kiadó)
+    if 'ingatlan_típusa' in conditions:
+        tipus = conditions['ingatlan_típusa'].lower()
+        ar_str = ing.get('Ár', '').lower()
+        if tipus == 'eladó' and 'millió' not in ar_str:
+            issues.append(f"Ingatlan típusa nem eladó: {ar_str}")
+        elif tipus == 'kiadó' and 'millió' in ar_str:
+            issues.append(f"Ingatlan típusa nem kiadó: {ar_str}")
+
+    # 9. Kategória (lakás / ház)
+    if 'kategória' in conditions:
+        kat = conditions['kategória'].lower()
+        if kat == 'lakás':
+            # Lakás: jellemzően nincs telek, vagy "nincs megadva"
+            if telek > 0:
+                issues.append(f"Kategória nem lakás (van telek: {telek} m²)")
+        elif kat == 'ház':
+            # Ház: jellemzően van telek
+            if telek == 0:
+                issues.append(f"Kategória nem ház (nincs telek)")
+
+    # 10. Komfort
+    if 'komfort' in conditions:
+        komfort_str = ing.get('Komfort', '').lower()
+        allowed_komfort = [k.lower() for k in conditions['komfort']]
+        if komfort_str and komfort_str != 'nincs megadva':
+            if komfort_str not in allowed_komfort:
+                issues.append(f"Komfort nem megfelelő: {komfort_str}")
+
+    # 11. Ingatlan jellege (pl. tégla építésű lakás)
+    if 'ingatlan_jellege' in conditions:
+        jellege_conds = conditions['ingatlan_jellege']
+        if isinstance(jellege_conds, list):
+            if not any(j.lower() in leiras for j in jellege_conds):
+                issues.append(f"Ingatlan jellege nem megfelelő (leírásban nincs: {jellege_conds})")
+        elif isinstance(jellege_conds, str):
+            if jellege_conds.lower() not in leiras:
+                issues.append(f"Ingatlan jellege nem megfelelő: {jellege_conds}")
+
     return issues
 
 def get_kizart_set(data, conditions):

@@ -78,7 +78,7 @@ def main() -> str:
         data = json.load(f)
 
     if args.prefilter:
-        conditions = load_prefilter_config("prefilters.json", args.prefilter)
+        conditions = load_prefilter_config("JSON/prefilters.json", args.prefilter)
         kizart = get_kizart_set(data, conditions)
     else:
         kizart = set()
