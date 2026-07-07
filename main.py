@@ -24,7 +24,7 @@ from scoring import (
     get_udvar_pont, get_extra_pont, get_kulcsszo_pont,
     get_egyedi_jellemzo, load_weights,
 )
-from prefilters import get_kizart_set, load_prefilter_config
+from prefilters import get_kizart_set, get_prefilter_issues, load_prefilter_config
 from rankrules import apply_ranking_rules
 
 
@@ -178,11 +178,12 @@ def main() -> str:
 
     if kizart:
         p("\n=== KIZÁRT INGATLANOK ===\n")
-        for i in kizart:
+        for i in sorted(kizart):
             ing = data[i]
-            p(f'#{i+1} {ing["cím"]} — Alapterület: {ing["Alapterület"]} (< 120 m²)'
-              if parse_terulet(ing['Alapterület']) < 120
-              else f'#{i+1} {ing["cím"]} — Nem felel meg a prefilter feltételeknek')
+            issues = get_prefilter_issues(ing, conditions)
+            p(f'#{i+1} {ing["cím"]}')
+            for issue in issues:
+                p(f'    — {issue}')
 
     output_text = out.getvalue()
 
@@ -200,7 +201,6 @@ def main() -> str:
 
     files_to_copy = [
         "JSON/scoring_config.json",
-        args.input,
         "PROMPTS/ranking_report_PROMPT.md",
         "PROMPTS/scoring.md",
         "scoring.py"
@@ -215,6 +215,13 @@ def main() -> str:
             shutil.copy(file, folder_name)
         else:
             print(f"Figyelmeztetés: {file} nem található, így nem lett átmásolva.", file=sys.stderr)
+
+    # Filtered input JSON — only ranked (non-excluded) items
+    filtered = [ing for i, ing in enumerate(data) if i not in kizart]
+    filtered_json_path = os.path.join(folder_name, "ranked_ingatlanok.json")
+    with open(filtered_json_path, 'w', encoding='utf-8') as f:
+        json.dump(filtered, f, ensure_ascii=False, indent=2)
+    print(f"Szűrt ingatlanok JSON elmentve: {filtered_json_path}", file=sys.stderr)
 
     print(output_text)
     return output_text

@@ -150,6 +150,27 @@ def extract_data(html: str, source_url: str, mhtml_path: str = "") -> dict:
                 break
     result["cím"] = cim or MISSING
 
+    # --- típus (property type, e.g. "Eladó tégla lakás") ---
+    # Located in the hero section as a <span class="card-title"> sibling right after the address span.
+    # The address span has class "fw-bold"; the típus span has "card-title" but NOT "fw-bold".
+    tipus = ""
+    for hero in soup.select("section#hero"):
+        # Find the address span (which has fw-bold), then its next card-title sibling (without fw-bold)
+        addr_span = hero.select_one("span.card-title.fw-bold")
+        if addr_span:
+            parent = addr_span.parent
+            if parent:
+                # Find the next card-title span that is NOT fw-bold
+                for sib in parent.find_all("span", class_="card-title", recursive=False):
+                    classes = sib.get("class", [])
+                    if "fw-bold" not in classes and sib is not addr_span:
+                        tipus = clean_text(sib.get_text())
+                        if tipus:
+                            break
+        if tipus:
+            break
+    result["típus"] = tipus or MISSING
+
     # --- Build param_map first (needed for Ár and all parameter fields) ---
     # ingatlan.com renders params as label/value pairs in various container structures.
     param_map = {}

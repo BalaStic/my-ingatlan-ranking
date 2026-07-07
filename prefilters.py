@@ -17,10 +17,23 @@ def load_prefilter_config(config_file, config_label):
     with open(config_file, 'r', encoding='utf-8') as f:
         config_data = json.load(f)
         
+    import re
+
     configs = config_data.get('configs', [])
     for cfg in configs:
         if cfg.get('label') == config_label:
-            return cfg.get('conditions', {})
+            conditions = cfg.get('conditions', {})
+            # Normalize "ingatlan_jellege": remove "építésű" word so
+            # e.g. "tégla építésű lakás" becomes "tégla lakás" matching the "típus" field
+            if 'ingatlan_jellege' in conditions:
+                jellege = conditions['ingatlan_jellege']
+                if isinstance(jellege, list):
+                    conditions['ingatlan_jellege'] = [
+                        re.sub(r'\s*építésű\s*', ' ', j).strip() for j in jellege
+                    ]
+                elif isinstance(jellege, str):
+                    conditions['ingatlan_jellege'] = re.sub(r'\s*építésű\s*', ' ', jellege).strip()
+            return conditions
             
     available = [c.get('label', '?') for c in configs]
     print(f"HIBA: A(z) '{config_label}' prefilter konfiguráció nem található a(z) {config_file} fájlban.", file=sys.stderr)
@@ -122,24 +135,42 @@ def get_prefilter_issues(ing, conditions):
 
     # 8. Ingatlan típusa (eladó / kiadó)
     if 'ingatlan_típusa' in conditions:
-        tipus = conditions['ingatlan_típusa'].lower()
-        ar_str = ing.get('Ár', '').lower()
-        if tipus == 'eladó' and 'millió' not in ar_str:
-            issues.append(f"Ingatlan típusa nem eladó: {ar_str}")
-        elif tipus == 'kiadó' and 'millió' in ar_str:
-            issues.append(f"Ingatlan típusa nem kiadó: {ar_str}")
+        tipus_cond = conditions['ingatlan_típusa'].lower()
+        tipus_field = ing.get('típus', '').lower()
+        if tipus_field:
+            # Use the "típus" field (e.g. "Eladó tégla lakás", "Kiadó családi ház")
+            if tipus_cond == 'eladó' and not tipus_field.startswith('eladó'):
+                issues.append(f"Ingatlan típusa nem eladó: {tipus_field}")
+            elif tipus_cond == 'kiadó' and not tipus_field.startswith('kiadó'):
+                issues.append(f"Ingatlan típusa nem kiadó: {tipus_field}")
+        else:
+            # Fallback: old heuristic based on Ár string
+            ar_str = ing.get('Ár', '').lower()
+            if tipus_cond == 'eladó' and 'millió' not in ar_str:
+                issues.append(f"Ingatlan típusa nem eladó: {ar_str}")
+            elif tipus_cond == 'kiadó' and 'millió' in ar_str:
+                issues.append(f"Ingatlan típusa nem kiadó: {ar_str}")
 
     # 9. Kategória (lakás / ház)
     if 'kategória' in conditions:
         kat = conditions['kategória'].lower()
-        if kat == 'lakás':
-            # Lakás: jellemzően nincs telek, vagy "nincs megadva"
-            if telek > 0:
-                issues.append(f"Kategória nem lakás (van telek: {telek} m²)")
-        elif kat == 'ház':
-            # Ház: jellemzően van telek
-            if telek == 0:
-                issues.append(f"Kategória nem ház (nincs telek)")
+        tipus_field = ing.get('típus', '').lower()
+        if tipus_field:
+            # Use the "típus" field (e.g. "Eladó tégla lakás", "Eladó családi ház")
+            if kat == 'lakás':
+                if 'lakás' not in tipus_field:
+                    issues.append(f"Kategória nem lakás (típus: {tipus_field})")
+            elif kat == 'ház':
+                if 'ház' not in tipus_field:
+                    issues.append(f"Kategória nem ház (típus: {tipus_field})")
+        else:
+            # Fallback: old heuristic based on telek
+            if kat == 'lakás':
+                if telek > 0:
+                    issues.append(f"Kategória nem lakás (van telek: {telek} m²)")
+            elif kat == 'ház':
+                if telek == 0:
+                    issues.append(f"Kategória nem ház (nincs telek)")
 
     # 10. Komfort
     if 'komfort' in conditions:
@@ -149,15 +180,26 @@ def get_prefilter_issues(ing, conditions):
             if komfort_str not in allowed_komfort:
                 issues.append(f"Komfort nem megfelelő: {komfort_str}")
 
-    # 11. Ingatlan jellege (pl. tégla építésű lakás)
+    # 11. Ingatlan jellege (pl. tégla lakás, családi ház)
     if 'ingatlan_jellege' in conditions:
         jellege_conds = conditions['ingatlan_jellege']
-        if isinstance(jellege_conds, list):
-            if not any(j.lower() in leiras for j in jellege_conds):
-                issues.append(f"Ingatlan jellege nem megfelelő (leírásban nincs: {jellege_conds})")
-        elif isinstance(jellege_conds, str):
-            if jellege_conds.lower() not in leiras:
-                issues.append(f"Ingatlan jellege nem megfelelő: {jellege_conds}")
+        tipus_field = ing.get('típus', '').lower()
+        if tipus_field:
+            # Use the "típus" field (e.g. "Eladó tégla lakás", "Eladó családi ház")
+            if isinstance(jellege_conds, list):
+                if not any(j.lower() in tipus_field for j in jellege_conds):
+                    issues.append(f"Ingatlan jellege nem megfelelő (típus: {tipus_field}, elvárt: {jellege_conds})")
+            elif isinstance(jellege_conds, str):
+                if jellege_conds.lower() not in tipus_field:
+                    issues.append(f"Ingatlan jellege nem megfelelő (típus: {tipus_field}, elvárt: {jellege_conds})")
+        else:
+            # Fallback: search in description
+            if isinstance(jellege_conds, list):
+                if not any(j.lower() in leiras for j in jellege_conds):
+                    issues.append(f"Ingatlan jellege nem megfelelő (leírásban nincs: {jellege_conds})")
+            elif isinstance(jellege_conds, str):
+                if jellege_conds.lower() not in leiras:
+                    issues.append(f"Ingatlan jellege nem megfelelő: {jellege_conds}")
 
     return issues
 

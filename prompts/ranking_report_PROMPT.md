@@ -57,11 +57,6 @@ A fájl az alábbi szerkezetet kövesse:
     tulajdonságok (pl. pince, napelem, medence, akadálymentesítés, fúrt kút, 
     dupla garázs, külön bejáratú lakrészek stb.)
 
-### 3. Kizárt ingatlanok szekció
-Kizárólag akkor, ha van a kizárt ingatlanokra vonatkozó információ.
-- **Kizárva**: a `ranked_<LABEL>.txt` "KIZÁRT INGATLANOK" listája alapján, 
-  indoklással (melyik prefilter feltétel nem teljesült [ha megadtuk])
-
 ## Stílus
 - Magyar nyelv
 - Emberi fogyasztásra szánt, olvasmányos, de precíz
