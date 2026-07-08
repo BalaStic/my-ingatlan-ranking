@@ -8,7 +8,12 @@
 ### 1. KOR — Építés éve
 ```
 ha az "Építés éve" nincs megadva:
-    próbál évet kinyerni a szöveges leírásból
+    Próbál évet kinyerni a szöveges leírásból, először precíz mintákkal:
+        „1981-ben épült" / „1998-ban épült" / „2010-ben épült"
+        „2023-as építésű" / „2017-es építésű"
+        „épült 1981-ben"
+    ha precíz találat van → érvényes évszámok átlaga (csak 1945–2030 között)
+    ha nincs precíz találat → FALLBACK: bármilyen 1950–2029 közötti évszám
     ha talál → vedd az átlagot
     ha „múlt század első felében" szerepel → 1940-et becsül
     egyébként → 1975-öt becsül (konzervatív)
@@ -29,13 +34,15 @@ KOR PONT = 1.0 + (év - 1950) / (2025 - 1950) × 4.0
     → közbenső példák: 1975 → 2.3, 2000 → 3.7, 2015 → 4.5
 
 KOR KATEGÓRIA (a pontozott év alapján):
-    év < 1991  → "1990 előtt"  (pre1990 flag)
-    1991-2000  → "1991-2000"   (middle csoport)
-    2001-2009  → "2001-2009"   (post2000 flag)
-    2010 után  → "2010 után"   (post2000 flag)
+    év < 1981   → "1981 előtt"
+    1981-2000   → "1981-2000"
+    2001-2010   → "2001-2010"
+    2011 után   → "2011 után"
 
-    Intervallum esetén a kategória helyett a ~évszám jelenik meg,
-    de a pre1990/post2000 flag a pontozáshoz használt év alapján dől el.
+    Intervallum esetén a kategória helyett a ~évszám jelenik meg.
+
+    Ez a négy kategória megegyezik a prefilters.json-ban használt
+    "kor" szűrési feltételekkel (pl. "1981-2000 között", "2011 után").
 ```
 
 ---

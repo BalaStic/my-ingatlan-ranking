@@ -5,8 +5,23 @@ Ezt importálja mind a main.py (get_kizart_set), mind a check_prefilter_conditio
 
 import json
 import os
+import re
 import sys
-from scoring import parse_ar, parse_terulet, parse_telek, parse_szobak
+from scoring import parse_ar, parse_terulet, parse_telek, parse_szobak, get_kor_kategoria
+
+def _parse_kor_range(kor_str):
+    """Parse a kor condition string like '1981-2000 között' or '2011 után' into (min_year, max_year)."""
+    kor_str = kor_str.lower()
+    match = re.match(r'(\d{4})\s*[-–]\s*(\d{4})\s*között', kor_str)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+    match = re.match(r'(\d{4})\s*előtt', kor_str)
+    if match:
+        return 1950, int(match.group(1)) - 1
+    match = re.match(r'(\d{4})\s*után', kor_str)
+    if match:
+        return int(match.group(1)), 2025
+    return None, None
 
 def load_prefilter_config(config_file, config_label):
     """Load a specific prefilter configuration from the JSON file."""
@@ -17,8 +32,6 @@ def load_prefilter_config(config_file, config_label):
     with open(config_file, 'r', encoding='utf-8') as f:
         config_data = json.load(f)
         
-    import re
-
     configs = config_data.get('configs', [])
     for cfg in configs:
         if cfg.get('label') == config_label:
@@ -172,7 +185,21 @@ def get_prefilter_issues(ing, conditions):
                 if telek == 0:
                     issues.append(f"Kategória nem ház (nincs telek)")
 
-    # 10. Komfort
+    # 10. Kor (építés éve)
+    if 'kor' in conditions:
+        kor_kat, kor_pont, kor_ev = get_kor_kategoria(ing.get('Építés éve', ''), leiras)
+        kor_allowed = conditions['kor']
+        if isinstance(kor_allowed, list):
+            found_kor = False
+            for kr_str in kor_allowed:
+                min_ev, max_ev = _parse_kor_range(kr_str)
+                if min_ev is not None and min_ev <= kor_ev <= max_ev:
+                    found_kor = True
+                    break
+            if not found_kor:
+                issues.append(f"Kor nem megfelelő: {kor_kat} (~{kor_ev}) (Elvárt: {kor_allowed})")
+
+    # 11. Komfort
     if 'komfort' in conditions:
         komfort_str = ing.get('Komfort', '').lower()
         allowed_komfort = [k.lower() for k in conditions['komfort']]
@@ -180,7 +207,7 @@ def get_prefilter_issues(ing, conditions):
             if komfort_str not in allowed_komfort:
                 issues.append(f"Komfort nem megfelelő: {komfort_str}")
 
-    # 11. Ingatlan jellege (pl. tégla lakás, családi ház)
+    # 12. Ingatlan jellege (pl. tégla lakás, családi ház)
     if 'ingatlan_jellege' in conditions:
         jellege_conds = conditions['ingatlan_jellege']
         tipus_field = ing.get('típus', '').lower()

@@ -216,12 +216,12 @@
       }
     },
     {
-      "label": "Balázs ház minden kerület 150-175M",
+      "label": "Balázs ház minden kerület",
       "conditions": {
         "ingatlan_típusa": "eladó",
-        "kategória": "lakás",
+        "kategória": "ház",
         "alapterület": {
-          "min": 100,
+          "min": 120,
           "egység": "m²"
         },
         "komfort": [
@@ -240,17 +240,24 @@
           "udvari beálló"
         ],
         "ingatlan_jellege": [
-          "tégla építésű lakás"
+          "családi ház",
+          "ikerház",
+          "sorház"
         ],
         "szobák_száma": {
           "min": 5,
           "viszony": "felett"
         },
         "ár": {
-          "min": 150,
-          "max": 175,
+          "min": 120,
+          "max": 150,
           "deviza": "millió Ft"
         },
+        "kor": [
+          "1981-2000 között",
+          "2001-2010 között",
+          "2011 után"
+        ],
         "kerületek": [
           "I. kerület",
           "II. kerület",
@@ -277,6 +284,6 @@
           "XXIII. kerület"
         ]
       }
-    }
+    }   
   ]
 }

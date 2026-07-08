@@ -46,24 +46,43 @@ function evToPont(ev) {
 }
 
 function korKategoriaStr(ev) {
-  if (ev < 1991) return '1990 előtt';
-  if (ev <= 2000) return '1991-2000';
-  if (ev <= 2009) return '2001-2009';
-  return '2010 után';
+  if (ev < 1981) return '1981 előtt';
+  if (ev <= 2000) return '1981-2000';
+  if (ev <= 2010) return '2001-2010';
+  return '2011 után';
 }
 
 function getKorKategoria(korStr, leiras = '') {
+  const YEAR_RE = /\b(19[5-9]\d|20[0-2]\d)\b/g;
   const MISSING = 'nincs megadva';
   if (!korStr || korStr.toLowerCase().includes('nincs megadva')) {
-    // Try to extract years from description
-    const matches = [...leiras.matchAll(/\b(19[5-9]\d|20[0-2]\d)\b/g)];
+    // Try precise patterns first from description
+    // (e.g. "1981-ben épült", "2023-as építésű")
+    let precise = [...leiras.matchAll(/(\d{4})\s*-\s*(?:ben|ban)\s+épült/g)];
+    if (precise.length === 0)
+      precise = [...leiras.matchAll(/(\d{4})\s*-\s*(?:as|es)\s+építésű/g)];
+    if (precise.length === 0)
+      precise = [...leiras.matchAll(/épült\s+(\d{4})\s*-\s*(?:ban|ben)/g)];
+
+    if (precise.length > 0) {
+      const evek = precise
+        .map(m => parseInt(m[1]))
+        .filter(y => y >= 1945 && y <= 2030);
+      if (evek.length > 0) {
+        const ev = Math.round(evek.reduce((a, b) => a + b, 0) / evek.length);
+        return { kat: korKategoriaStr(ev), pont: evToPont(ev), ev };
+      }
+    }
+
+    // Fallback: any year 1950–2029 in description
+    const matches = [...leiras.matchAll(YEAR_RE)];
     if (matches.length > 0) {
       const evek = matches.map(m => parseInt(m[1]));
       const ev = Math.round(evek.reduce((a, b) => a + b, 0) / evek.length);
       return { kat: korKategoriaStr(ev), pont: evToPont(ev), ev };
     }
     if (leiras.toLowerCase().includes('múlt század első felében')) {
-      return { kat: '1990 előtt', pont: evToPont(1940), ev: 1940 };
+      return { kat: '1981 előtt', pont: evToPont(1940), ev: 1940 };
     }
     return { kat: 'Ismeretlen', pont: evToPont(1975), ev: 1975 };
   }
@@ -81,7 +100,7 @@ function getKorKategoria(korStr, leiras = '') {
   }
 
   // Specific year(s)
-  const years = [...korStr.matchAll(/\b(19[5-9]\d|20[0-2]\d)\b/g)].map(m => parseInt(m[1]));
+  const years = [...korStr.matchAll(YEAR_RE)].map(m => parseInt(m[1]));
   if (years.length > 0) {
     const ev = Math.max(...years);
     return { kat: korKategoriaStr(ev), pont: evToPont(ev), ev };
