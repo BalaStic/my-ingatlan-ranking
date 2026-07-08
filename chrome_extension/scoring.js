@@ -55,24 +55,30 @@ function korKategoriaStr(ev) {
 function getKorKategoria(korStr, leiras = '') {
   const YEAR_RE = /\b(19[5-9]\d|20[0-2]\d)\b/g;
   const MISSING = 'nincs megadva';
-  if (!korStr || korStr.toLowerCase().includes('nincs megadva')) {
-    // Try precise patterns first from description
-    // (e.g. "1981-ben épült", "2023-as építésű")
-    let precise = [...leiras.matchAll(/(\d{4})\s*-\s*(?:ben|ban)\s+épült/g)];
+
+  function tryPreciseYear(desc) {
+    // Try precise patterns (e.g. "1981-ben épült", "2023-as építésű")
+    let precise = [...desc.matchAll(/(\d{4})\s*-\s*(?:ben|ban)\s+épült/g)];
     if (precise.length === 0)
-      precise = [...leiras.matchAll(/(\d{4})\s*-\s*(?:as|es)\s+építésű/g)];
+      precise = [...desc.matchAll(/(\d{4})\s*-\s*(?:as|es)\s+építésű/g)];
     if (precise.length === 0)
-      precise = [...leiras.matchAll(/épült\s+(\d{4})\s*-\s*(?:ban|ben)/g)];
+      precise = [...desc.matchAll(/épült\s+(\d{4})\s*-\s*(?:ban|ben)/g)];
 
     if (precise.length > 0) {
       const evek = precise
         .map(m => parseInt(m[1]))
         .filter(y => y >= 1945 && y <= 2030);
       if (evek.length > 0) {
-        const ev = Math.round(evek.reduce((a, b) => a + b, 0) / evek.length);
-        return { kat: korKategoriaStr(ev), pont: evToPont(ev), ev };
+        return Math.round(evek.reduce((a, b) => a + b, 0) / evek.length);
       }
     }
+    return null;
+  }
+
+  if (!korStr || korStr.toLowerCase().includes('nincs megadva')) {
+    const preciseEv = tryPreciseYear(leiras);
+    if (preciseEv !== null)
+      return { kat: korKategoriaStr(preciseEv), pont: evToPont(preciseEv), ev: preciseEv };
 
     // Fallback: any year 1950–2029 in description
     const matches = [...leiras.matchAll(YEAR_RE)];
@@ -90,6 +96,11 @@ function getKorKategoria(korStr, leiras = '') {
   // Interval: "1950 és 1980 között"
   const intervalMatch = korStr.match(/(\d{4})\s+és\s+(\d{4})/);
   if (intervalMatch) {
+    // Try precise year from description first, even for interval data
+    const preciseEv = tryPreciseYear(leiras);
+    if (preciseEv !== null)
+      return { kat: String(preciseEv), pont: evToPont(preciseEv), ev: preciseEv };
+
     const ev1 = parseInt(intervalMatch[1]);
     const ev2 = parseInt(intervalMatch[2]);
     const midpoint = (ev1 + ev2) / 2;

@@ -19,9 +19,12 @@ ha az "Építés éve" nincs megadva:
     egyébként → 1975-öt becsül (konzervatív)
 
 ha intervallum (pl. "1950 és 1980 között"):
-    → középpont = (év1 + év2) / 2
-    → pontozás: floor(középpont) — konzervatív, az alsó évszámot használja
-    → megjelenítés: "~ceil(középpont)" — a közelítő felső évszám
+    először itt is próbál precíz évszámot találni a leírásban
+        ha talál (pl. "1993-ban épült") → azt használja, megjelenítés: "1993"
+    ha nincs precíz találat:
+        → középpont = (év1 + év2) / 2
+        → pontozás: floor(középpont) — konzervatív, az alsó évszámot használja
+        → megjelenítés: "~ceil(középpont)" — a közelítő felső évszám
     példák:
         "1950 és 1980 között" → pontozás: 1965, megjelenítés: ~1965
         "1981 és 2000 között" → pontozás: 1990, megjelenítés: ~1991

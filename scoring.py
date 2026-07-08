@@ -65,20 +65,25 @@ def get_kor_kategoria(kor_str, leiras=''):
     """
     YEAR_RE = re.compile(r'(19[5-9]\d|20[0-2]\d)')
 
-    if not kor_str or 'nincs megadva' in kor_str.lower():
-        # Próbál precíz minták alapján évet kinyerni a leírásból
-        # (pl. „1981-ben épült", „2023-as építésű")
-        precise = re.findall(r'(\d{4})\s*-\s*(?:ben|ban)\s+épült', leiras)
+    def _try_precise_year(desc):
+        """Próbál precíz évszámot kinyerni a leírásból
+        (pl. „1981-ben épült", „2023-as építésű").
+        Visszatér az évvel vagy None-nal."""
+        precise = re.findall(r'(\d{4})\s*-\s*(?:ben|ban)\s+épült', desc)
         if not precise:
-            precise = re.findall(r'(\d{4})\s*-\s*(?:as|es)\s+építésű', leiras)
+            precise = re.findall(r'(\d{4})\s*-\s*(?:as|es)\s+építésű', desc)
         if not precise:
-            precise = re.findall(r'épült\s+(\d{4})\s*-\s*(?:ban|ben)', leiras)
-
+            precise = re.findall(r'épült\s+(\d{4})\s*-\s*(?:ban|ben)', desc)
         if precise:
             evek = [int(y) for y in precise if 1945 <= int(y) <= 2030]
             if evek:
-                ev = int(round(sum(evek) / len(evek)))
-                return _kor_kategoria_str(ev), _ev_to_pont(ev), ev
+                return int(round(sum(evek) / len(evek)))
+        return None
+
+    if not kor_str or 'nincs megadva' in kor_str.lower():
+        precise_ev = _try_precise_year(leiras)
+        if precise_ev is not None:
+            return _kor_kategoria_str(precise_ev), _ev_to_pont(precise_ev), precise_ev
 
         # Fallback: bármilyen 1950–2029 közötti évszám a leírásban
         evek = [int(m) for m in YEAR_RE.findall(leiras)]
@@ -91,6 +96,11 @@ def get_kor_kategoria(kor_str, leiras=''):
 
     match = re.search(r'(\d{4})\s+és\s+(\d{4})', kor_str)
     if match:
+        # Intervallum esetén is először próbálj precíz évszámot találni a leírásban
+        precise_ev = _try_precise_year(leiras)
+        if precise_ev is not None:
+            return str(precise_ev), _ev_to_pont(precise_ev), precise_ev
+
         ev1, ev2 = int(match.group(1)), int(match.group(2))
         midpoint = (ev1 + ev2) / 2
         ev = int(midpoint)  # floor: conservatively use the lower bound for scoring
