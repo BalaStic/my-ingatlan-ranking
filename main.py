@@ -4,9 +4,8 @@ main.py — CLI belépési pont az ingatlan pontozáshoz és rangsoroláshoz.
 Bemenet: JSON/ingatlanok.json, kimenet: ranked_{LABEL}.txt
 
 Használat:
-  python main.py
-  python main.py -c most_modern
-  python main.py -i masik_adatok.json -o eredmenyek.txt -c legmodernebb
+  python main.py -i JSON/ingatlanok.json -c most_modern
+  python main.py -i masik_adatok.json -c legmodernebb -p "Balázs lakás 1"
 """
 
 import argparse
@@ -30,25 +29,19 @@ from rankrules import apply_ranking_rules
 
 def main() -> str:
     parser = argparse.ArgumentParser(
-        description="Score and rank properties from JSON/ingatlanok.json using the ingatlan ranking prompt.",
-    )
-    parser.add_argument(
-        "--output", "-o",
-        metavar="FILE",
-        default=None,
-        help="Output file (default: ranked_{LABEL}.txt, e.g. ranked_default.txt)",
+        description="Score and rank properties from a JSON input file using the ingatlan ranking prompt.",
     )
     parser.add_argument(
         "--input", "-i",
         metavar="FILE",
-        default="JSON/ingatlanok.json",
-        help="Input JSON file (default: ingatlanok.json)",
+        required=True,
+        help="Input JSON file (e.g. JSON/ingatlanok.json)",
     )
     parser.add_argument(
         "--config", "-c",
         metavar="LABEL",
-        default="default",
-        help="Config label to use from scoring_config.json (default: default)",
+        required=True,
+        help="Config label to use from scoring_config.json",
     )
     parser.add_argument(
         "--config-file",
@@ -69,8 +62,7 @@ def main() -> str:
     )
     args = parser.parse_args()
 
-    if args.output is None:
-        args.output = f"ranked_{args.config}.txt"
+    args.output = f"ranked_{args.config}.txt"
 
     weights, config_desc = load_weights(args.config_file, args.config)
 
@@ -80,8 +72,14 @@ def main() -> str:
     if args.prefilter:
         conditions = load_prefilter_config("JSON/prefilters.json", args.prefilter)
         kizart = get_kizart_set(data, conditions)
+        with open("JSON/prefilters.json", 'r', encoding='utf-8') as f:
+            prefilter_data = json.load(f)
+        selected_prefilter_config = next(
+            (c for c in prefilter_data['configs'] if c['label'] == args.prefilter), None
+        )
     else:
         kizart = set()
+        selected_prefilter_config = None
 
     out = io.StringIO()
     p = lambda *a, **kw: print(*a, **kw, file=out)
@@ -206,8 +204,11 @@ def main() -> str:
         "PROMPTS/ranking_report_PROMPT.md",
         "PROMPTS/scoring.md"
     ]
-    if args.prefilter:
-        files_to_copy.append("prefilters.json")
+    if args.prefilter and selected_prefilter_config:
+        prefilter_out_path = os.path.join(folder_name, "prefilter.json")
+        with open(prefilter_out_path, 'w', encoding='utf-8') as f:
+            json.dump(selected_prefilter_config, f, ensure_ascii=False, indent=2)
+        print(f"Prefilter config elmentve: {prefilter_out_path}", file=sys.stderr)
     if args.enable_reranking:
         files_to_copy.extend(["rankrules.md", "rankrules.py"])
         

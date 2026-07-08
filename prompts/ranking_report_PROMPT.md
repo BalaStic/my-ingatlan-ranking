@@ -12,7 +12,7 @@ Készítsd el az `ingatlan_rangsor.md` fájlt, amely egy emberi fogyasztásra sz
    szigetelés, napelem, stb.). Innen kell kivenni a részletes leírásokhoz szükséges 
    információkat, linkeket, címeket.
 
-3. **`prefilters.json`**  - Kötelező / kizáró peremfeltételek (prefilter)
+3. **`prefilter.json`**  - Kötelező / kizáró peremfeltételek (prefilter)
   Ellenőrizd, hogy megadta-e a felhasználó.
   Ha nincs megadva, az azt jelenti, hogy lényegtelen, mi volt az előszűrési feltétel, mert a felhasználót csak a rangsorolt ingatlanok érdeklik.
   Ha meg van adva, az azt jelenti, hogy a felhasználó egy scripttel ezen információk alapján előszűrte az ingatlanokat, és ennek megfelelően
@@ -56,6 +56,16 @@ A fájl az alábbi szerkezetet kövesse:
   - **Egyedi jellemző**: az ingatlanok.json leírásából kigyűjtött nem szokványos 
     tulajdonságok (pl. pince, napelem, medence, akadálymentesítés, fúrt kút, 
     dupla garázs, külön bejáratú lakrészek stb.)
+
+### 3. Összegzés
+
+#### Legjobb választás: ...
+- **Előnyök:** ...
+- **Hátrányok:** ...
+
+#### Legjobb ár-érték arány: Budapest XVIII. kerület, Kossuth Ferenc-telep
+- **Előnyök:** ...
+- **Hátrányok:** ...
 
 ## Stílus
 - Magyar nyelv

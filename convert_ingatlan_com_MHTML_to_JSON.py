@@ -3,7 +3,7 @@
 extract_ingatlan.py — Extract property data from ingatlan.com MHTML files.
 
 Usage:
-    python extract_ingatlan.py <file1.mhtml> [file2.mhtml ...] [--output FILE]
+    python extract_ingatlan.py <file1.mhtml> [file2.mhtml ...] --output FILE
 
 Wildcards are supported (e.g. *.mhtml).
 """
@@ -311,8 +311,8 @@ def main():
         "--output",
         "-o",
         metavar="FILE",
-        default=None,
-        help="Write JSON output to FILE instead of stdout",
+        required=True,
+        help="Write JSON output to FILE",
     )
     args = parser.parse_args()
 
@@ -333,12 +333,9 @@ def main():
 
     output_json = json.dumps(results, ensure_ascii=False, indent=2)
 
-    if args.output:
-        with open(args.output, "w", encoding="utf-8") as f:
-            f.write(output_json)
-        print(f"Wrote {len(results)} record(s) to {args.output}", file=sys.stderr)
-    else:
-        print(output_json)
+    with open(args.output, "w", encoding="utf-8") as f:
+        f.write(output_json)
+    print(f"Wrote {len(results)} record(s) to {args.output}", file=sys.stderr)
 
 
 if __name__ == "__main__":
