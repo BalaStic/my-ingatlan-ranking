@@ -245,7 +245,7 @@
           "sorház"
         ],
         "szobák_száma": {
-          "min": 5,
+          "min": 4,
           "viszony": "felett"
         },
         "ár": {

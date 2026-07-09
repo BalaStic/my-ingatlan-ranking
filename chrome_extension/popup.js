@@ -141,10 +141,106 @@ function renderResult(scoreResult, ing, configLabel) {
 // Main init
 // ---------------------------------------------------------------------------
 
+const MAX_LINKS = 25; // limit for opening links to avoid overwhelming the user or the PC
+
+/**
+ * Function injected into the active tab to find all ingatlan.com listing links.
+ * @returns {string[]} deduplicated array of full listing URLs
+ */
+function findIngatlanLinks() {
+  const HREF_RE = /^\/(\d{8})(?:\/|\?|#|$)/;
+  const seen = new Set();
+  const allLinks = document.querySelectorAll('a[href]');
+  const results = [];
+  for (const a of allLinks) {
+    const rawHref = a.getAttribute('href');
+    if (rawHref && HREF_RE.test(rawHref)) {
+      const fullUrl = a.href;
+      if (!seen.has(fullUrl)) {
+        seen.add(fullUrl);
+        results.push(fullUrl);
+      }
+    }
+  }
+  return results;
+}
+
 function init() {
   const select = document.getElementById('configSelect');
   const btn = document.getElementById('scoreBtn');
   const saveAllBtn = document.getElementById('saveAllBtn');
+  const saveFromPageBtn = document.getElementById('saveFromPageBtn');
+
+  if (saveFromPageBtn) {
+    saveFromPageBtn.addEventListener('click', async () => {
+      saveFromPageBtn.disabled = true;
+      saveAllBtn.disabled = true;
+      btn.disabled = true;
+      hideError();
+      setStatus('Linkek keresése az aktív oldalon...');
+
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab || !tab.id) {
+          setStatus('Nincs aktív fül.');
+          setTimeout(() => {
+            setStatus('Nyomj a Pontozás gombra!');
+            saveFromPageBtn.disabled = false;
+            saveAllBtn.disabled = false;
+            btn.disabled = false;
+          }, 2500);
+          return;
+        }
+
+        const results = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: findIngatlanLinks,
+          args: []
+        });
+
+        const links = results[0]?.result || [];
+        if (links.length === 0) {
+          setStatus('Nem található ingatlan link az oldalon.');
+          setTimeout(() => {
+            setStatus('Nyomj a Pontozás gombra!');
+            saveFromPageBtn.disabled = false;
+            saveAllBtn.disabled = false;
+            btn.disabled = false;
+          }, 2500);
+          return;
+        }
+
+        const toSave = links.slice(0, MAX_LINKS);
+        setStatus(`${toSave.length} link mentése elindítva (összesen ${links.length} találat)...`);
+
+        // Send URLs to background service worker — popup closes immediately
+        chrome.runtime.sendMessage({ action: 'saveFromLinks', urls: toSave }, (response) => {
+          if (chrome.runtime.lastError) {
+            return;
+          }
+          if (response) {
+            const { savedCount, failedCount } = response;
+            if (failedCount > 0) {
+              setStatus(`Kész! ${savedCount} mentve, ${failedCount} sikertelen.`);
+            } else {
+              setStatus(`Kész! ${savedCount} ingatlan mentve.`);
+            }
+          }
+          saveFromPageBtn.disabled = false;
+          saveAllBtn.disabled = false;
+          btn.disabled = false;
+        });
+
+        // Close popup — service worker takes over
+        setTimeout(() => window.close(), 200);
+      } catch (e) {
+        showError('Hiba: ' + e.message);
+        saveFromPageBtn.disabled = false;
+        saveAllBtn.disabled = false;
+        btn.disabled = false;
+      }
+    });
+  }
 
   if (saveAllBtn) {
     saveAllBtn.addEventListener('click', async () => {
