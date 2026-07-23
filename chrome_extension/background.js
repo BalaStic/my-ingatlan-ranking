@@ -4,6 +4,12 @@
  * Returns base64-encoded MHTML to the popup for download.
  */
 
+// ---------------------------------------------------------------------------
+// Anti-bot detection: random wait between tab activation and scrolling
+// ---------------------------------------------------------------------------
+const SCROLL_DELAY_MIN_MS = 2000; // minimum wait before scrolling (ms)
+const SCROLL_DELAY_MAX_MS = 4000; // maximum wait before scrolling (ms)
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'saveMhtml') {
     const { tabId, tabUrl, cim } = request;
@@ -198,8 +204,10 @@ async function preloadAndCapture(tabId, filename, sendResponse) {
     console.log('[preloadAndCapture] Activating tab', tabId);
     await chrome.tabs.update(tabId, { active: true });
 
-    // 2. Wait for the page to render (inactive tabs may have deferred content)
-    await new Promise(r => setTimeout(r, 1500));
+    // 2. Random wait for anti-bot detection (between SCROLL_DELAY_MIN_MS and SCROLL_DELAY_MAX_MS)
+    const scrollDelay = Math.floor(Math.random() * (SCROLL_DELAY_MAX_MS - SCROLL_DELAY_MIN_MS + 1)) + SCROLL_DELAY_MIN_MS;
+    console.log(`[preloadAndCapture] Waiting ${scrollDelay}ms before scrolling...`);
+    await new Promise(r => setTimeout(r, scrollDelay));
 
     // 3. Inject progressive scroll
     console.log('[preloadAndCapture] Injecting progressiveScroll...');

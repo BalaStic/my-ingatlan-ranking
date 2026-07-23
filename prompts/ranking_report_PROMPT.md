@@ -8,7 +8,7 @@ Készítsd el az `ingatlan_rangsor.md` fájlt, amely egy emberi fogyasztásra sz
    Ez tartalmazza a végleges sorrendet, a pontszámokat, és az egyes kategóriák 
    részpontszámait (kor, terület, állapot, energetika, udvar, extra, kulcsszó).
 
-2. **`ingatlanok.json`** — az ingatlanok nyers adatai (leírás, ár, alapterület, fűtés típusa,
+2. **`ranked_ingatlanok.json`** — az ingatlanok nyers adatai (leírás, ár, alapterület, fűtés típusa,
    szigetelés, napelem, stb.). Innen kell kivenni a részletes leírásokhoz szükséges 
    információkat, linkeket, címeket.
 

@@ -33,11 +33,11 @@
       "label": "Encike ház",
       "description": "Encike házra vonatkozó preferenciái alapján",
       "weights": {
-        "kor": 6,
-        "terulet": 10,
+        "kor": 7,
+        "terulet": 9,
         "allapot": 8,
         "energetika": 7,
-        "udvar": 9,
+        "udvar": 8,
         "extra": 5,
         "kulcsszo": 2
       }

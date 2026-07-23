@@ -69,6 +69,10 @@ def main() -> str:
     with open(args.input, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
+    # Normalize: if JSON is an object, convert to list of values
+    if isinstance(data, dict):
+        data = list(data.values())
+
     if args.prefilter:
         conditions = load_prefilter_config("JSON/prefilters.json", args.prefilter)
         kizart = get_kizart_set(data, conditions)
@@ -89,6 +93,9 @@ def main() -> str:
     results = []
     for i, ing in enumerate(data):
         if i in kizart:
+            continue
+        if not isinstance(ing, dict):
+            print(f"Figyelmeztetés: #{i+1} nem dict típusú elem, kihagyva: {repr(ing)[:200]}", file=sys.stderr)
             continue
 
         ar           = parse_ar(ing['Ár'])
@@ -180,6 +187,9 @@ def main() -> str:
         p("\n=== KIZÁRT INGATLANOK ===\n")
         for i in sorted(kizart):
             ing = data[i]
+            if not isinstance(ing, dict):
+                p(f'#{i+1} (nem feldolgozható adat: {repr(ing)[:200]})')
+                continue
             issues = get_prefilter_issues(ing, conditions)
             p(f'#{i+1} {ing["cím"]}')
             for issue in issues:

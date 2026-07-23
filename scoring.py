@@ -16,8 +16,29 @@ import sys
 # ---------------------------------------------------------------------------
 
 def parse_ar(ar_str):
-    ar_ertek = ar_str.replace(' millió Ft', '').replace(',', '.').split()[0].strip()
-    return float(ar_ertek)
+    """Extract the price in million HUF from an Ár string.
+    
+    Handles formats like:
+      - "149,90 millió Ft 423,090 ezer €"
+      - "42,5 millió Ft"
+      - "1 890,00 millió Ft"
+    Returns 0.0 if parsing fails.
+    """
+    try:
+        s = re.sub(r'\s+', ' ', str(ar_str))
+        # Try the "millió Ft" pattern first (Hungarian decimal comma)
+        # Includes spaces in the capture to handle "1 890,00 millió Ft"
+        m = re.search(r'([\d.,\s]+?)\s*milli[óo]+\s*Ft', s)
+        if m:
+            val = m.group(1).replace(' ', '').replace('.', '').replace(',', '.')
+            return float(val)
+        # Fallback: extract the first numeric-looking token
+        m = re.search(r'(\d+[.,]?\d*)', s)
+        if m:
+            return float(m.group(1).replace(',', '.'))
+    except (ValueError, TypeError, AttributeError):
+        pass
+    return 0.0
 
 def parse_terulet(t):
     return int(t.replace(' m2', '').strip()) if t and 'nincs' not in t.lower() else 0

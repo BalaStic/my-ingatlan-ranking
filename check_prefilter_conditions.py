@@ -29,6 +29,10 @@ conditions = load_prefilter_config("prefilters.json", args.prefilter)
 with open(INPUT_FILE, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
+# Normalize: if JSON is an object, convert to list of values
+if isinstance(data, dict):
+    data = list(data.values())
+
 ok_count = 0
 kizart_count = 0
 

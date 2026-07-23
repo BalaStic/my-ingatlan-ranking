@@ -7,9 +7,25 @@
 // ---------------------------------------------------------------------------
 
 function parseAr(arStr) {
+  // Handles formats like "149,90 millió Ft 423,090 ezer €" and "1 890,00 millió Ft"
   if (!arStr || arStr === 'nincs megadva') return 0;
-  const cleaned = arStr.replace(' millió Ft', '').replace(',', '.').trim().split(/\s+/)[0];
-  return parseFloat(cleaned) || 0;
+  try {
+    const s = ('' + arStr).replace(/\s+/g, ' ');
+    // Try "millió Ft" pattern with Hungarian decimal comma
+    const millioMatch = s.match(/([\d.,\s]+?)\s*milli[óo]+\s*Ft/);
+    if (millioMatch) {
+      const val = millioMatch[1].replace(/\s/g, '').replace(/\./g, '').replace(/,/g, '.');
+      const parsed = parseFloat(val);
+      if (!isNaN(parsed)) return parsed;
+    }
+    // Fallback: first numeric token
+    const numMatch = s.match(/(\d+[.,]?\d*)/);
+    if (numMatch) {
+      const parsed = parseFloat(numMatch[1].replace(/,/g, '.'));
+      if (!isNaN(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return 0;
 }
 
 function parseTerulet(t) {

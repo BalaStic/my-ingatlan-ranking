@@ -69,13 +69,18 @@ def get_prefilter_issues(ing, conditions):
     the given property fails. An empty list means the property passes all conditions."""
     issues = []
     
-    ar       = parse_ar(ing.get('Ár', ''))
-    terulet  = parse_terulet(ing.get('Alapterület', ''))
-    telek    = parse_telek(ing.get('Telekterület', ''))
-    szobak   = parse_szobak(ing.get('Szobák', ''))
+    try:
+        ar       = parse_ar(ing.get('Ár', ''))
+        terulet  = parse_terulet(ing.get('Alapterület', ''))
+        telek    = parse_telek(ing.get('Telekterület', ''))
+        szobak   = parse_szobak(ing.get('Szobák', ''))
+        leiras   = ing.get('leírás', '').lower()
+    except Exception:
+        issues.append('Hiba az ingatlan adatainak feldolgozása közben')
+        return issues
+
     parkolas = ing.get('Parkolás', '').lower()
     cim      = ing.get('cím', '')
-    leiras   = ing.get('leírás', '').lower()
     allapot  = ing.get('Ingatlan állapota', '').lower()
 
     # 1. Ár ellenőrzés
@@ -89,9 +94,12 @@ def get_prefilter_issues(ing, conditions):
         allowed_districts = conditions['kerületek']
         # Extract roman numeral if present in cim, e.g. "Budapest XVIII. kerület" -> "XVIII. kerület"
         found = False
+        cim_lower = cim.lower()
         for district in allowed_districts:
-            # We lowercase both to do a robust check
-            if district.lower() in cim.lower():
+            # Use negative lookbehind to avoid substring false positives:
+            # e.g. "X. kerület" must NOT match inside "XX. kerület"
+            pattern = r'(?<![A-Za-z])' + re.escape(district.lower())
+            if re.search(pattern, cim_lower):
                 found = True
                 break
         
