@@ -165,9 +165,9 @@ def main() -> str:
     if args.enable_reranking:
         results = apply_ranking_rules(results)
 
-    # Részletes elemzés rendezett sorrendben (első 10 részletesen)
+    # Részletes elemzés rendezett sorrendben (első 20 részletesen)
     for rank, r in enumerate(results, 1):
-        if rank > 10:
+        if rank > 20:
             break
         p(f'#{rank} {r["cim"]}')
         p(f'   Ár: {r["ar"]}M | Terület: {r["terulet"]}m² | Nm-ár: {r["nm_ar"]:,.0f} Ft/m²')
@@ -228,9 +228,9 @@ def main() -> str:
         else:
             print(f"Figyelmeztetés: {file} nem található, így nem lett átmásolva.", file=sys.stderr)
 
-    # Filtered input JSON — top 10 ranked items
-    top10_indices = [r['index'] - 1 for r in results[:10]]
-    filtered = [data[i] for i in top10_indices]
+    # Filtered input JSON — top 20 ranked items
+    top20_indices = [r['index'] - 1 for r in results[:20]]
+    filtered = [data[i] for i in top20_indices]
     filtered_json_path = os.path.join(folder_name, "ranked_ingatlanok.json")
     with open(filtered_json_path, 'w', encoding='utf-8') as f:
         json.dump(filtered, f, ensure_ascii=False, indent=2)

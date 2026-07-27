@@ -43,7 +43,7 @@ A fájl az alábbi szerkezetet kövesse:
   configja alapján)
 - Említsd meg a speciális szabályt: pl. "1990 előtti ház nem előzhet meg 2000 utánit"
 
-### 2. Top 10 rangsorolt ingatlan
+### 2. Top 20 rangsorolt ingatlan
 - A `ranked_<LABEL>.txt` rangsora alapján, pontszám szerint csökkenőben
 - Minden ingatlannál:
   - **Cím, pontszám, link** (az ingatlanok.json-ból)
