@@ -155,13 +155,18 @@ def get_energetika_pont(ing):
     szigeteles = ing.get('Szigetelés', '').lower()
     energetika = ing.get('Energetikai tanúsítvány', '').lower()
     klima      = ing.get('Légkondicionáló', '').lower()
+    leiras     = ing.get('leírás', '').lower()
 
     pont = 1
 
     if 'van' in napelem:
         pont += 2
     if 'van' in szigeteles:
-        if '15' in szigeteles:
+        # Numeric cm extraction instead of a brittle "15" substring check,
+        # so that e.g. "20 cm" also correctly scores as thick/good insulation.
+        cm_match = re.search(r'(\d+)\s*cm', szigeteles)
+        cm = int(cm_match.group(1)) if cm_match else 0
+        if cm >= 15:
             pont += 2
         else:
             pont += 1
@@ -173,6 +178,17 @@ def get_energetika_pont(ing):
         pont += 1
     elif 'konvektor' in futes:
         pont -= 1
+    elif 'vegyes' in futes:
+        # Vegyes tüzelésű kazán (mixed gas/wood-burning) is just as old-fashioned
+        # as a convector, so it gets the same small penalty for consistency.
+        pont -= 1
+    if 'padlófűtés' in futes or 'padlófűtés' in leiras:
+        # Padlófűtés (underfloor heating) is a heat-delivery method, not a heat
+        # source, and is checked independently from the fűtés if/elif chain
+        # above. It's associated with modern/renovated properties and works
+        # especially well with heat pumps (lower flow temperature). Checked in
+        # both the Fűtés field and the leírás (description) text.
+        pont += 1
     if 'van' in klima:
         pont += 1
     if ('c' in energetika or 'b' in energetika) and 'nincs' not in energetika:
@@ -180,8 +196,11 @@ def get_energetika_pont(ing):
     if 'a' in energetika and 'nincs' not in energetika:
         pont += 2
 
-    cap = 5 if 'hőszivattyú' in futes else 4
-    return max(1, min(cap, pont))
+    # Cap relaxed: previously non-heat-pump properties were hard-capped at 4,
+    # even if they had an A+ certificate, solar panels, great insulation, and AC.
+    # Now every property can reach the full 5 if its overall energetics warrant it.
+    return max(1, min(5, pont))
+
 
 def get_udvar_pont(telek, terulet):
     kert = telek - terulet

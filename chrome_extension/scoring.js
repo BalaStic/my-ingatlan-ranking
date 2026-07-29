@@ -160,28 +160,47 @@ function getEnergetikaPont(ing) {
   const szigeteles = (ing['Szigetelés'] || '').toLowerCase();
   const energetika = (ing['Energetikai tanúsítvány'] || '').toLowerCase();
   const klima = (ing['Légkondicionáló'] || '').toLowerCase();
+  const leiras = (ing['leírás'] || '').toLowerCase();
 
   let pont = 1; // base: low (even without gas boiler, minimum 1 after clamp)
 
   if (napelem.includes('van')) pont += 2;
   if (szigeteles.includes('van')) {
-    if (szigeteles.includes('15')) pont += 2;
-    else if (szigeteles.includes('10')) pont += 1;
+    // Numeric cm extraction instead of a brittle "15" substring check,
+    // so that e.g. "20 cm" also correctly scores as thick/good insulation.
+    const cmMatch = szigeteles.match(/(\d+)\s*cm/);
+    const cm = cmMatch ? parseInt(cmMatch[1]) : 0;
+    if (cm >= 15) pont += 2;
     else pont += 1;
   }
   if (futes.includes('hőszivattyú')) pont += 3;
   else if (futes.includes('kondenzációs')) pont += 2;
   else if (futes.includes('gázkazán') && !futes.includes('vegyes')) pont += 1;
   else if (futes.includes('konvektor')) pont -= 1;
+  else if (futes.includes('vegyes')) {
+    // Vegyes tüzelésű kazán (mixed gas/wood-burning) is just as old-fashioned
+    // as a convector, so it gets the same small penalty for consistency.
+    pont -= 1;
+  }
+  if (futes.includes('padlófűtés') || leiras.includes('padlófűtés')) {
+    // Padlófűtés (underfloor heating) is a heat-delivery method, not a heat
+    // source, and is checked independently from the fűtés if/else-if chain
+    // above. It's associated with modern/renovated properties and works
+    // especially well with heat pumps (lower flow temperature). Checked in
+    // both the Fűtés field and the leírás (description) text.
+    pont += 1;
+  }
 
   if (klima.includes('van')) pont += 1;
   if ((energetika.includes('c') || energetika.includes('b')) && !energetika.includes('nincs')) pont += 1;
   if (energetika.includes('a') && !energetika.includes('nincs')) pont += 2;
 
-  // Only hőszivattyú can reach 5; gázkazán/other heating capped at 4
-  const cap = futes.includes('hőszivattyú') ? 5 : 4;
-  return Math.max(1, Math.min(cap, pont));
+  // Cap relaxed: previously non-heat-pump properties were hard-capped at 4,
+  // even if they had an A+ certificate, solar panels, great insulation, and AC.
+  // Now every property can reach the full 5 if its overall energetics warrant it.
+  return Math.max(1, Math.min(5, pont));
 }
+
 
 // ---------------------------------------------------------------------------
 // Udvar

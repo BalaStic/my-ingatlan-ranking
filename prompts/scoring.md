@@ -80,14 +80,21 @@ alap: 1 pont
 
 ha napelem = "van"          → +2 pt
 ha szigetelés tartalmaz "van":
-    ha tartalmaz "15" (cm)  → +2 pt
-    ha tartalmaz "10" (cm)  → +1 pt
-    egyébként               → +1 pt
+    kinyeri a cm értéket a szövegből (pl. "20 cm" → 20)
+    ha cm ≥ 15              → +2 pt
+    egyébként (van, de <15cm vagy nincs megadva vastagság) → +1 pt
 
 ha fűtés = "hőszivattyú"       → +3 pt
 egyébként ha "kondenzációs"    → +2 pt
 egyébként ha "gázkazán" (nem vegyes fűtés) → +1 pt
 egyébként ha "konvektor"       → -1 pt
+egyébként ha "vegyes" (tüzelésű kazán) → -1 pt   ← ugyanaz a kis levonás, mint konvektornál
+
+ha "padlófűtés" szerepel a Fűtés mezőben VAGY a leírásban → +1 pt
+    (független a fenti fűtés-forrás if/elif ágtól — a padlófűtés egy
+    hőleadási mód, nem hőforrás, ezért bármelyik fűtéstípus mellett
+    adható, ha a szöveg tartalmazza; jellemzően modern/felújított
+    ingatlanokra utal, és hőszivattyúval párosítva a leghatékonyabb)
 
 ha klíma = "van"               → +1 pt
 
@@ -95,19 +102,23 @@ ha energetikai tanúsítvány tartalmaz "c" vagy "b" (és nem "nincs megadva") �
 ha energetikai tanúsítvány tartalmaz "a" (és nem "nincs megadva")          → +2 pt
 
 MAXIMUM korlátozás:
-    ha hőszivattyú:   max = 5
-    egyébként:        max = 4   ← gázkazán soha nem érheti el az 5-öt
+    max = 5 minden esetben (a korábbi, hőszivattyúra korlátozott
+    hard cap feloldva — egy kiváló energetikájú gázkazános ingatlan
+    (pl. A+ tanúsítvány + napelem + jó szigetelés) is elérheti az 5 pontot)
 
-VÉGSŐ PONT = max(1 ; min(cap ; összeg))
+VÉGSŐ PONT = max(1 ; min(5 ; összeg))
 
 példák:
     gázkazán alone:                      1+1 = 2
-    gázkazán + 15cm szigetelés:          1+1+2 = 4
-    gázkazán + 15cm + klíma:             1+1+2+1 = 5 → capped → 4
+    gázkazán + 20cm szigetelés:          1+1+2 = 4   ← javítva: korábban a "20 cm" hibásan csak +1-et adott
+    gázkazán + 15cm + klíma:             1+1+2+1 = 5
     hőszivattyú:                         1+3 = 4
     hőszivattyú + napelem:               1+3+2 = 6 → capped → 5
     hőszivattyú + napelem + 15cm:        1+3+2+2 = 8 → capped → 5
+    gázkazán + padlófűtés:               1+1+1 = 3   ← új: padlófűtés bónusz
+    hőszivattyú + padlófűtés + napelem:  1+3+1+2 = 7 → capped → 5
 ```
+
 
 ---
 
